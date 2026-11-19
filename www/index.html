@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#EEF3F1"><title>Sobres</title>
+<style>
+:root{--bg:#EEF3F1;--card:#fff;--ink:#12302B;--mut:#5E7A73;--line:#D8E3DF;--acc:#12302B;--onacc:#fff;--coin:#F2C230;--bad:#C2410C;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1D1A;--card:#183029;--ink:#E8F1EE;--mut:#8FB0A7;--line:#254238;--acc:#F2C230;--onacc:#12302B;--bad:#FB923C;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Roboto,sans-serif;padding:max(20px,env(safe-area-inset-top)) 18px 120px}
+.num{font-family:ui-serif,Georgia,serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+h1{font-size:15px;font-weight:600;margin:6px 0 14px;color:var(--mut)}
+.hero{background:var(--card);border-radius:28px;padding:22px 20px;border:1px solid var(--line)}
+.hero button{all:unset;cursor:pointer;display:block;width:100%}
+.lbl{font-size:13px;color:var(--mut)}
+.big{font-size:44px;line-height:1.1;margin:2px 0 16px}
+.bar{display:flex;height:16px;border-radius:99px;overflow:hidden;background:var(--line);gap:2px}
+.bar i{display:block;height:100%;transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.left{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}
+.left b{font-size:22px}.over{color:var(--bad)}
+h2{font-size:15px;margin:26px 4px 10px}
+.env{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:10px;width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.em{flex:none;width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px}
+.env .m{flex:1;min-width:0}.env .t{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.env .s{font-size:13px;color:var(--mut);margin-top:3px}
+.pg{height:6px;border-radius:9px;background:var(--line);margin-top:8px;overflow:hidden}.pg i{display:block;height:100%;border-radius:9px}
+.empty{text-align:center;color:var(--mut);padding:28px 10px}
+.fab{position:fixed;left:18px;right:18px;bottom:max(18px,env(safe-area-inset-bottom));height:56px;border:0;border-radius:18px;background:var(--acc);color:var(--onacc);font:600 16px system-ui;cursor:pointer}
+.fab:active,.env:active{transform:scale(.98)}
+.sc{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+.sc.on{opacity:1;pointer-events:auto}
+.sh{position:fixed;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:10px 20px max(22px,env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sh.on{transform:none}.grip{width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 14px}
+.sh h3{margin:0 0 14px;font-size:20px}
+label{display:block;font-size:13px;color:var(--mut);margin:14px 0 6px}
+input{width:100%;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:14px;font:600 18px system-ui;outline:0}
+input:focus-visible{border-color:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:8px 14px;font:500 14px system-ui;cursor:pointer}
+.chip.sel{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.chip.e{font-size:22px;padding:6px 10px}
+.btn{width:100%;height:52px;border:0;border-radius:16px;background:var(--acc);color:var(--onacc);font:600 16px system-ui;margin-top:18px;cursor:pointer}
+.btn.g{background:transparent;color:var(--bad);margin-top:6px}.btn.s2{background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-top:10px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<h1>Mi dinero, por sobres</h1>
+<div class="hero"><button id="tb" aria-label="Editar monto total"><div class="lbl">Monto total · toca para cambiarlo</div><div class="big num" id="tot"></div></button>
+<div class="bar" id="bar"></div>
+<div class="left"><span class="lbl" id="ll"></span><b class="num" id="lv"></b></div></div>
+<h2>Tus sobres</h2><div id="list"></div>
+<button class="fab" id="add">Crear sobre</button>
+<div class="sc" id="sc"></div><div class="sh" id="sh" role="dialog"></div><div class="toast" id="ts"></div>
+<script>
+const $=s=>document.querySelector(s),COL=['#F59E0B','#3B82F6','#10B981','#EC4899','#8B5CF6','#EF4444','#14B8A6','#84CC16'],EMO=['🍽️','🏠','🚌','💡','🛒','💊','🎓','🎮','🎁','✈️','👕','🐷'];
+let S;try{S=JSON.parse(localStorage.getItem('sobres'))}catch(e){}
+S=S||{total:0,cats:[['Comida','🍽️'],['Transporte','🚌'],['Ahorro','🐷']].map((c,i)=>({id:i+1,name:c[0],emoji:c[1],color:COL[i],amount:0,spent:0}))};
+const save=()=>{try{localStorage.setItem('sobres',JSON.stringify(S))}catch(e){}},
+fmt=n=>'$'+(+n||0).toLocaleString('es',{maximumFractionDigits:2}),
+num=v=>Math.max(0,parseFloat(String(v).replace(',','.'))||0),
+used=()=>S.cats.reduce((a,c)=>a+c.amount,0);
+function toast(t){const e=$('#ts');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1800)}
+function render(){const u=used(),l=S.total-u;
+$('#tot').textContent=fmt(S.total);
+$('#bar').innerHTML=S.cats.filter(c=>c.amount>0&&S.total>0).map(c=>`<i style="width:${Math.min(100,c.amount/Math.max(S.total,u)*100)}%;background:${c.color}"></i>`).join('');
+$('#ll').textContent=l<0?'Te pasaste por':'Sin asignar';
+$('#lv').textContent=fmt(Math.abs(l));$('#lv').className='num'+(l<0?' over':'');
+$('#list').innerHTML=S.cats.length?S.cats.map(c=>{const av=c.amount-c.spent,p=c.amount?Math.min(100,c.spent/c.amount*100):0;
+return `<button class="env" data-id="${c.id}"><span class="em" style="background:${c.color}26">${c.emoji}</span><span class="m"><span class="t"><span>${c.name}</span><span class="num">${fmt(c.amount)}</span></span><div class="s">${c.spent?`Gastado ${fmt(c.spent)} · `:''}${av<0?`<span class="over">Excedido ${fmt(-av)}</span>`:`Disponible ${fmt(av)}`}</div><div class="pg"><i style="width:${p}%;background:${av<0?'var(--bad)':c.color}"></i></div></span></button>`}).join(''):'<div class="empty">Aún no tienes sobres. Crea el primero para repartir tu dinero.</div>';save()}
+function open(h){$('#sh').innerHTML='<div class="grip"></div>'+h;$('#sc').classList.add('on');$('#sh').classList.add('on')}
+function close(){$('#sc').classList.remove('on');$('#sh').classList.remove('on')}
+$('#sc').onclick=close;
+$('#tb').onclick=()=>{open(`<h3>Monto total</h3><label>¿Cuánto dinero vas a repartir?</label><input id="v" inputmode="decimal" value="${S.total||''}" placeholder="0"><button class="btn" id="ok">Guardar monto</button>`);
+$('#ok').onclick=()=>{S.total=num($('#v').value);close();render()};setTimeout(()=>$('#v').focus(),300)};
+function sheet(id){const n=!id,c=n?{name:'',emoji:EMO[0],color:COL[S.cats.length%COL.length],amount:0,spent:0}:S.cats.find(x=>x.id==id);let em=c.emoji;
+const free=S.total-used()+(n?0:c.amount);
+open(`<h3>${n?'Nuevo sobre':'Editar sobre'}</h3><label>Nombre</label><input id="n" value="${c.name}" placeholder="Ej. Renta, Salidas…" maxlength="24">
+<div class="row" id="eg">${EMO.map(e=>`<button class="chip e${e==em?' sel':''}">${e}</button>`).join('')}</div>
+<label>Monto asignado</label><input id="a" inputmode="decimal" value="${c.amount||''}" placeholder="0">
+<div class="row"><button class="chip" data-p="10">10%</button><button class="chip" data-p="25">25%</button><button class="chip" data-p="50">50%</button><button class="chip" data-p="r">Todo lo que queda (${fmt(Math.max(0,free))})</button></div>
+${n?'':`<label>Registrar un gasto</label><input id="g" inputmode="decimal" placeholder="0"><button class="btn s2" id="gb">Restar gasto del sobre</button>`}
+<button class="btn" id="ok">${n?'Crear sobre':'Guardar cambios'}</button>${n?'':'<button class="btn g" id="del">Eliminar sobre</button>'}`);
+$('#eg').onclick=e=>{if(e.target.classList.contains('e')){em=e.target.textContent;document.querySelectorAll('#eg .chip').forEach(x=>x.classList.toggle('sel',x==e.target))}};
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const p=b.dataset.p;$('#a').value=p=='r'?Math.max(0,free):Math.round(S.total*p)/100});
+$('#ok').onclick=()=>{const nm=$('#n').value.trim();if(!nm){$('#n').focus();return toast('Escribe un nombre')}
+const a=num($('#a').value);if(a>free&&S.total>0)toast('Ojo: superas tu monto total');
+c.name=nm;c.emoji=em;c.amount=a;if(n){c.id=Date.now();S.cats.push(c)}close();render()};
+if(!n){$('#gb').onclick=()=>{const g=num($('#g').value);if(!g)return;c.spent+=g;close();render();toast('Gasto registrado')};
+$('#del').onclick=()=>{if(confirm('¿Eliminar este sobre?')){S.cats=S.cats.filter(x=>x!=c);close();render()}}}}
+$('#add').onclick=()=>sheet();
+$('#list').onclick=e=>{const b=e.target.closest('.env');if(b)sheet(b.dataset.id)};
+render();
+</script></body></html>

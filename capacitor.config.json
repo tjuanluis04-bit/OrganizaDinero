@@ -1,0 +1,6 @@
+{
+  "appId": "com.sobres.presupuesto",
+  "appName": "Sobres",
+  "webDir": "www",
+  "android": { "backgroundColor": "#EEF3F1" }
+}

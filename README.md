@@ -4,3 +4,4 @@
 3. Abre la ejecución y descarga el artefacto `sobres-apk`: dentro está `app-debug.apk`.
 4. Instala el APK en tu teléfono (permite instalar apps de origen desconocido).
 Los datos se guardan en el teléfono. Todo el código de la app está en `www/index.html`.
+El icono se genera desde `assets/` (icon-foreground.png, icon-background.png, icon-only.png).
